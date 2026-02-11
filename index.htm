@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Selfie Express - Samsung Fix</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(145deg, #2b2b2b, #1a1a1a);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 12px;
+        }
+
+        .app {
+            max-width: 420px;
+            width: 100%;
+            background: white;
+            border-radius: 32px;
+            padding: 24px 20px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.3);
+        }
+
+        h1 {
+            color: #1a1a1a;
+            font-size: 28px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 3px solid #f0f0f0;
+            padding-bottom: 16px;
+        }
+
+        /* SECCIÓN DE PERMISOS - NUEVO */
+        .permiso-section {
+            background: #f8f9ff;
+            border-radius: 20px;
+            padding: 24px;
+            text-align: center;
+            margin-bottom: 20px;
+            border: 2px dashed #6366f1;
+        }
+
+        .permiso-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .permiso-text {
+            color: #1f2937;
+            font-size: 16px;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        .btn-permiso {
+            background: #6366f1;
+            color: white;
+            border: none;
+            border-radius: 16px;
+            padding: 16px 32px;
+            font-size: 18px;
+            font-weight: bold;
+            width: 100%;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 8px 16px rgba(99,102,241,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .btn-permiso:active {
+            transform: scale(0.97);
+            background: #4f52e0;
+        }
+
+        /* CÁMARA */
+        .camera-wrapper {
+            background: #000;
+            border-radius: 24px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            display: none;
+            border: 3px solid #fff;
+            box-shadow: 0 12px 24px rgba(0,0,0,0.2);
+        }
+
+        #video {
+            width: 100%;
+            height: auto;
+            display: block;
+            background: #000;
+        }
+
+        /* BOTONES CÁMARA */
+        .camera-controls {
+            display: none;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .btn-capture, .btn-switch {
+            flex: 1;
+            padding: 16px;
+            border: none;
+            border-radius: 16px;
+            font-size: 18px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-capture {
+            background: #22c55e;
+            color: white;
+            box-shadow: 0 8px 16px rgba(34,197,94,0.3);
+        }
+
+        .btn-switch {
+            background: #f59e0b;
+            color: white;
+            box-shadow: 0 8px 16px rgba(245,158,11,0.3);
+        }
+
+        /* GALERÍA */
+        .gallery-section {
+            background: #f9fafb;
+            border-radius: 24px;
+            padding: 20px;
+        }
+
+        .gallery-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .gallery-title h2 {
+            color: #1f2937;
+            font-size: 20px;
+        }
+
+        .btn-clear {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+
+        .gallery-item {
+            position: relative;
+            aspect-ratio: 1;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .gallery-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .delete-btn {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            background: rgba(239,68,68,0.9);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .empty-gallery {
+            grid-column: span 3;
+            text-align: center;
+            padding: 40px 20px;
+            color: #6b7280;
+            background: white;
+            border-radius: 16px;
+        }
+
+        /* CANVAS OCULTO */
+        #canvas {
+            display: none;
+        }
+
+        /* TOAST */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: #1f2937;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 50px;
+            font-size: 14px;
+            transition: all 0.3s;
+            z-index: 1000;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <h1>
+            <span>📸</span> Selfie Express
+        </h1>
+
+        <!-- SECCIÓN DE PERMISO - MUY VISIBLE -->
+        <div id="permisoSection" class="permiso-section">
+            <div class="permiso-icon">📷</div>
+            <div class="permiso-text">
+                <strong style="font-size: 18px;">¡Hola! 👋</strong><br><br>
+                Para tomar selfies necesito acceder a tu cámara.<br>
+                <span style="color: #6366f1; font-weight: bold; display: block; margin-top: 12px;">
+                    Samsung A14 - Presiona el botón para continuar
+                </span>
+            </div>
+            <button id="btnSolicitarPermiso" class="btn-permiso">
+                <span>🔵</span> SOLICITAR ACCESO A CÁMARA
+            </button>
+        </div>
+
+        <!-- CÁMARA (OCULTA INICIALMENTE) -->
+        <div id="cameraWrapper" class="camera-wrapper">
+            <video id="video" autoplay playsinline></video>
+        </div>
+
+        <!-- CONTROLES (OCULTOS INICIALMENTE) -->
+        <div id="cameraControls" class="camera-controls">
+            <button id="btnCapturar" class="btn-capture">
+                <span>📸</span> CAPTURAR
+            </button>
+            <button id="btnCambiar" class="btn-switch">
+                <span>🔄</span> CAMBIAR
+            </button>
+        </div>
+
+        <!-- CANVAS -->
+        <canvas id="canvas"></canvas>
+
+        <!-- GALERÍA -->
+        <div class="gallery-section">
+            <div class="gallery-title">
+                <h2>Mis Selfies</h2>
+                <button id="btnLimpiar" class="btn-clear">🗑️ LIMPIAR</button>
+            </div>
+            <div id="galleryGrid" class="gallery-grid">
+                <div class="empty-gallery">
+                    📸 No hay selfies aún<br>
+                    <span style="font-size: 13px; color: #9ca3af;">Concede permiso y captura tu primera foto</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast"></div>
+
+    <script>
+        class SelfieSamsung {
+            constructor() {
+                // Elementos
+                this.btnPermiso = document.getElementById('btnSolicitarPermiso');
+                this.permisoSection = document.getElementById('permisoSection');
+                this.cameraWrapper = document.getElementById('cameraWrapper');
+                this.cameraControls = document.getElementById('cameraControls');
+                this.video = document.getElementById('video');
+                this.canvas = document.getElementById('canvas');
+                this.galleryGrid = document.getElementById('galleryGrid');
+                this.toast = document.getElementById('toast');
+                
+                // Bind events DIRECTAMENTE
+                this.btnPermiso.onclick = () => this.solicitarPermiso();
+                
+                // Estado
+                this.stream = null;
+                this.caraActual = 'user'; // frontal
+                
+                // Cargar galería
+                this.cargarGaleria();
+                
+                console.log('✅ App iniciada en Samsung A14');
+            }
+
+            async solicitarPermiso() {
+                try {
+                    console.log('🔵 Solicitando permiso de cámara...');
+                    
+                    // Cambiar UI
+                    this.btnPermiso.innerHTML = '<span>⏳</span> SOLICITANDO PERMISO...';
+                    this.btnPermiso.disabled = true;
+                    this.btnPermiso.style.opacity = '0.8';
+
+                    // CONFIGURACIÓN ESPECÍFICA PARA SAMSUNG
+                    const constraints = {
+                        video: {
+                            facingMode: { exact: 'user' },  // IMPORTANTE: 'exact' fuerza frontal
+                            width: { ideal: 640 },
+                            height: { ideal: 480 }
+                        },
+                        audio: false
+                    };
+
+                    // SOLICITAR PERMISO
+                    this.stream = await navigator.mediaDevices.getUserMedia(constraints);
+                    
+                    console.log('✅ Permiso concedido!');
+                    
+                    // Asignar al video
+                    this.video.srcObject = this.stream;
+                    
+                    // Esperar a que cargue
+                    await new Promise((resolve) => {
+                        this.video.onloadedmetadata = () => {
+                            this.video.play()
+                                .then(() => {
+                                    console.log('🎥 Video reproduciendo');
+                                    resolve();
+                                })
+                                .catch(e => console.error('Error al reproducir:', e));
+                        };
+                    });
+
+                    // OCULTAR sección de permiso
+                    this.permisoSection.style.display = 'none';
+                    
+                    // MOSTRAR cámara y controles
+                    this.cameraWrapper.style.display = 'block';
+                    this.cameraControls.style.display = 'flex';
+                    
+                    // Configurar botones
+                    document.getElementById('btnCapturar').onclick = () => this.capturarSelfie();
+                    document.getElementById('btnCambiar').onclick = () => this.cambiarCamara();
+                    document.getElementById('btnLimpiar').onclick = () => this.limpiarGaleria();
+                    
+                    this.mostrarToast('✅ Cámara lista!');
+
+                } catch (error) {
+                    console.error('❌ Error completo:', error);
+                    
+                    // Restaurar botón
+                    this.btnPermiso.innerHTML = '<span>🔵</span> SOLICITAR ACCESO A CÁMARA';
+                    this.btnPermiso.disabled = false;
+                    this.btnPermiso.style.opacity = '1';
+                    
+                    // Mensaje específico para Samsung
+                    let mensaje = '❌ ';
+                    if (error.name === 'NotAllowedError' || error.message.includes('denied')) {
+                        mensaje += 'Permiso denegado. Ve a Ajustes > Aplicaciones > Chrome > Permisos > Cámara';
+                    } else if (error.name === 'NotFoundError') {
+                        mensaje += 'No se encontró cámara frontal';
+                    } else if (error.name === 'NotReadableError') {
+                        mensaje += 'Cámara ocupada. Cierra otras apps';
+                    } else {
+                        mensaje += 'Error: ' + (error.message || 'desconocido');
+                    }
+                    
+                    this.mostrarToast(mensaje, 4000);
+                    
+                    // Mostrar instrucciones
+                    const permisoText = document.querySelector('.permiso-text');
+                    permisoText.innerHTML = `
+                        <strong style="color: #ef4444;">❌ Error de permiso</strong><br><br>
+                        <span style="background: #f3f4f6; padding: 12px; border-radius: 12px; display: block;">
+                            🔧 SOLUCIÓN SAMSUNG:<br>
+                            1. Abre Ajustes<br>
+                            2. Ve a Aplicaciones > Chrome<br>
+                            3. Toca "Permisos"<br>
+                            4. Activa "Cámara"<br>
+                            5. Reinicia Chrome
+                        </span>
+                    `;
+                }
+            }
+
+            capturarSelfie() {
+                if (!this.video.videoWidth) {
+                    this.mostrarToast('⏳ Espera a que la cámara esté lista');
+                    return;
+                }
+
+                try {
+                    // Configurar canvas
+                    this.canvas.width = this.video.videoWidth;
+                    this.canvas.height = this.video.videoHeight;
+                    
+                    // Capturar frame
+                    const ctx = this.canvas.getContext('2d');
+                    ctx.drawImage(this.video, 0, 0, this.canvas.width, this.canvas.height);
+                    
+                    // Convertir a imagen
+                    const imageData = this.canvas.toDataURL('image/jpeg', 0.9);
+                    
+                    // Guardar
+                    this.guardarSelfie(imageData);
+                    
+                    // Flash
+                    this.video.style.opacity = '0.6';
+                    setTimeout(() => { this.video.style.opacity = '1'; }, 100);
+                    
+                } catch (error) {
+                    console.error('Error captura:', error);
+                    this.mostrarToast('❌ Error al capturar');
+                }
+            }
+
+            async cambiarCamara() {
+                // Alternar frontal/trasera
+                this.caraActual = this.caraActual === 'user' ? 'environment' : 'user';
+                
+                // Detener stream
+                if (this.stream) {
+                    this.stream.getTracks().forEach(t => t.stop());
+                }
+                
+                try {
+                    // Nueva solicitud
+                    const constraints = {
+                        video: {
+                            facingMode: { exact: this.caraActual },
+                            width: { ideal: 640 },
+                            height: { ideal: 480 }
+                        }
+                    };
+                    
+                    this.stream = await navigator.mediaDevices.getUserMedia(constraints);
+                    this.video.srcObject = this.stream;
+                    await this.video.play();
+                    
+                    this.mostrarToast(`📱 Cámara ${this.caraActual === 'user' ? 'frontal' : 'trasera'}`);
+                    
+                } catch (error) {
+                    console.error('Error al cambiar:', error);
+                    this.mostrarToast('❌ No se pudo cambiar de cámara');
+                    
+                    // Reintentar con frontal
+                    this.caraActual = 'user';
+                    await this.solicitarPermiso();
+                }
+            }
+
+            guardarSelfie(imageData) {
+                let selfies = localStorage.getItem('selfies_samsung');
+                selfies = selfies ? JSON.parse(selfies) : [];
+                
+                selfies.unshift({
+                    id: Date.now(),
+                    data: imageData,
+                    fecha: new Date().toLocaleString()
+                });
+                
+                // Máximo 20 fotos
+                if (selfies.length > 20) selfies = selfies.slice(0, 20);
+                
+                localStorage.setItem('selfies_samsung', JSON.stringify(selfies));
+                
+                this.cargarGaleria();
+                this.mostrarToast('✅ Selfie guardada!');
+            }
+
+            cargarGaleria() {
+                const selfies = JSON.parse(localStorage.getItem('selfies_samsung') || '[]');
+                
+                if (selfies.length === 0) {
+                    this.galleryGrid.innerHTML = '<div class="empty-gallery">📸 No hay selfies aún</div>';
+                    return;
+                }
+
+                let html = '';
+                selfies.forEach(selfie => {
+                    html += `
+                        <div class="gallery-item">
+                            <img src="${selfie.data}" alt="Selfie">
+                            <button class="delete-btn" onclick="app.eliminarSelfie(${selfie.id})">×</button>
+                        </div>
+                    `;
+                });
+                
+                this.galleryGrid.innerHTML = html;
+            }
+
+            eliminarSelfie(id) {
+                let selfies = JSON.parse(localStorage.getItem('selfies_samsung') || '[]');
+                selfies = selfies.filter(s => s.id !== id);
+                localStorage.setItem('selfies_samsung', JSON.stringify(selfies));
+                this.cargarGaleria();
+                this.mostrarToast('🗑️ Selfie eliminada');
+            }
+
+            limpiarGaleria() {
+                if (confirm('¿Eliminar todas las selfies?')) {
+                    localStorage.removeItem('selfies_samsung');
+                    this.cargarGaleria();
+                    this.mostrarToast('🗑️ Galería limpiada');
+                }
+            }
+
+            mostrarToast(mensaje, duracion = 2000) {
+                this.toast.textContent = mensaje;
+                this.toast.classList.add('show');
+                setTimeout(() => {
+                    this.toast.classList.remove('show');
+                }, duracion);
+            }
+        }
+
+        // Iniciar
+        let app;
+        window.onload = () => {
+            app = new SelfieSamsung();
+        };
+    </script>
+</body>
+</html>
