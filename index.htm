@@ -486,7 +486,7 @@
                 try {
                     this.mostrarToast('🔄 Cargando sistema biométrico...', 2000);
                     
-                    const MODEL_URL = 'https://raw.githubusercontent.com/justadudewhohacks/face-api.js/master/weights/';
+                    const MODEL_URL = 'https://github.com/justadudewhohacks/face-api.js/tree/master/weights';
                     
                     await Promise.all([
                         faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
