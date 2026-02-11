@@ -486,13 +486,13 @@
                 try {
                     this.mostrarToast('🔄 Cargando sistema biométrico...', 2000);
                     
-                    const MODEL_URL = '/models';
+                    const MODEL_URL = '/camera_self/models';
                     
                     await Promise.all([
-                        faceapi.nets.tinyFaceDetector.loadFromUri('/models'),
-                        faceapi.nets.faceLandmark68Net.loadFromUri('/models'),
-                        faceapi.nets.faceRecognitionNet.loadFromUri('/models'),
-                        faceapi.nets.faceExpressionNet.loadFromUri('/models')
+                        faceapi.nets.tinyFaceDetector.loadFromUri('/camera_self/models'),
+                        faceapi.nets.faceLandmark68Net.loadFromUri('/camera_self/models'),
+                        faceapi.nets.faceRecognitionNet.loadFromUri('/camera_self/models'),
+                        faceapi.nets.faceExpressionNet.loadFromUri('/camera_self/models')
                     ]);
                     
                     this.modelosCargados = true;
